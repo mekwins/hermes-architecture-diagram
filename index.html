@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Claude Code — System Architecture</title>
+<title>Hermes Agent — System Architecture</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -50,7 +50,7 @@
   <div class="header">
     <div class="header-row">
       <div class="pulse-dot"></div>
-      <h1>Claude Code — System Architecture</h1>
+      <h1>Hermes Agent — System Architecture</h1>
     </div>
     <p class="subtitle">Kris's Hermes agent stack — channels, delegation, MCP services &amp; the outbound confirmation gate</p>
   </div>
@@ -87,11 +87,11 @@
       <path d="M 440,337 Q 480,330 520,320" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead)"/>
       <path d="M 440,417 Q 480,375 520,335" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead)"/>
 
-      <!-- Voice -> Claude Code -->
+      <!-- Voice -> Hermes Agent -->
       <path d="M 440,547 Q 610,470 780,425" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead)"/>
       <path d="M 440,622 Q 610,520 780,450" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead)"/>
 
-      <!-- Gateway -> Claude Code -->
+      <!-- Gateway -> Hermes Agent -->
       <path d="M 720,320 Q 750,370 780,415" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead)"/>
       <text x="722" y="360" fill="#94a3b8" font-size="8">routes session</text>
 
@@ -119,15 +119,15 @@
       <path d="M 800,392 Q 600,150 440,187" fill="none" stroke="#22d3ee" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#arrowhead)"/>
       <text x="600" y="140" fill="#94a3b8" font-size="7">digest</text>
 
-      <!-- Claude Code -> Skills Library -->
+      <!-- Hermes Agent -> Skills Library -->
       <line x1="910" y1="380" x2="910" y2="332" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
 
-      <!-- Claude Code -> Computer Control -->
+      <!-- Hermes Agent -> Computer Control -->
       <path d="M 1040,415 Q 1080,560 1120,707" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
       <path d="M 1040,440 Q 1090,600 1120,782" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
       <path d="M 1040,465 Q 1095,650 1120,857" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
 
-      <!-- Claude Code -> MCP servers -->
+      <!-- Hermes Agent -> MCP servers -->
       <path d="M 1040,405 Q 1200,110 1400,187" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
       <path d="M 1040,415 Q 1220,150 1400,262" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
       <path d="M 1040,425 Q 1240,190 1400,337" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
@@ -141,7 +141,7 @@
       <line x1="1510" y1="615" x2="1510" y2="653" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
       <path d="M 1530,615 Q 1560,635 1586,653" fill="none" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
 
-      <!-- Claude Code -> Outbound Confirmation Gate -> External recipients (dashed rose) -->
+      <!-- Hermes Agent -> Outbound Confirmation Gate -> External recipients (dashed rose) -->
       <line x1="910" y1="520" x2="910" y2="578" stroke="#fb7185" stroke-width="1.5" marker-end="url(#arrowhead-rose)"/>
       <text x="918" y="555" fill="#fb7185" font-size="8">confirmation required</text>
       <line x1="910" y1="640" x2="910" y2="698" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="5,5" marker-end="url(#arrowhead-rose)"/>
@@ -237,10 +237,10 @@
       <text x="910" y="312" fill="#94a3b8" font-size="7" text-anchor="middle">Creative · Productivity · DevOps · Email · Research</text>
       <text x="910" y="323" fill="#94a3b8" font-size="7" text-anchor="middle">Apple · GitHub · Dev · Media/MLOps/Notes/Home/Social</text>
 
-      <!-- Claude Code core -->
+      <!-- Hermes Agent core -->
       <rect x="780" y="380" width="260" height="140" rx="10" fill="#0f172a"/>
       <rect x="780" y="380" width="260" height="140" rx="10" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="2"/>
-      <text x="910" y="418" fill="white" font-size="14" font-weight="700" text-anchor="middle">Claude Code</text>
+      <text x="910" y="418" fill="white" font-size="14" font-weight="700" text-anchor="middle">Hermes Agent</text>
       <text x="910" y="436" fill="#94a3b8" font-size="9" text-anchor="middle">default profile — core agent</text>
       <text x="910" y="452" fill="#94a3b8" font-size="9" text-anchor="middle">claude-sonnet-5 via Anthropic</text>
       <text x="910" y="470" fill="#34d399" font-size="8" text-anchor="middle">hub of the system</text>
@@ -391,7 +391,7 @@
     <div class="card">
       <div class="card-header"><div class="card-dot emerald"></div><h3>Agent &amp; Delegation Layer</h3></div>
       <ul>
-        <li>• Claude Code (default profile) — claude-sonnet-5 via Anthropic, system hub</li>
+        <li>• Hermes Agent (default profile) — claude-sonnet-5 via Anthropic, system hub</li>
         <li>• koderek (cloned profile) — autonomous coding + deploy worker</li>
         <li>• Kanban Board (SQLite queue) dispatches koderek every 60s tick</li>
         <li>• Computer Use, Browser Automation, Terminal/Shell for local control</li>
@@ -408,7 +408,7 @@
     </div>
   </div>
 
-  <p class="footer">Claude Code — System Architecture • generated with the architecture-diagram skill • dark/JetBrains Mono standard</p>
+  <p class="footer">Hermes Agent — System Architecture • generated with the architecture-diagram skill • dark/JetBrains Mono standard</p>
 </div>
 </body>
 </html>
