@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code — System Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'JetBrains Mono', monospace;
+    background: #020617;
+    min-height: 100vh;
+    padding: 2rem;
+    color: white;
+  }
+  .container { max-width: 1500px; margin: 0 auto; }
+  .header { margin-bottom: 2rem; }
+  .header-row { display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem; }
+  .pulse-dot { width:12px; height:12px; background:#34d399; border-radius:50%; animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+  h1 { font-size:1.5rem; font-weight:700; letter-spacing:-0.025em; }
+  .subtitle { color:#94a3b8; font-size:0.875rem; margin-left:1.75rem; }
+  .diagram-container {
+    background: rgba(15,23,42,0.5);
+    border-radius: 1rem;
+    border: 1px solid #1e293b;
+    padding: 1.5rem;
+    overflow-x: auto;
+  }
+  svg { width:100%; min-width:1400px; display:block; }
+  .cards { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap:1rem; margin-top:2rem; }
+  .card { background: rgba(15,23,42,0.5); border-radius:0.75rem; border:1px solid #1e293b; padding:1.25rem; }
+  .card-header { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem; }
+  .card-dot { width:8px; height:8px; border-radius:50%; }
+  .card-dot.cyan { background:#22d3ee; }
+  .card-dot.emerald { background:#34d399; }
+  .card-dot.violet { background:#a78bfa; }
+  .card-dot.amber { background:#fbbf24; }
+  .card-dot.rose { background:#fb7185; }
+  .card h3 { font-size:0.875rem; font-weight:600; }
+  .card ul { list-style:none; color:#94a3b8; font-size:0.75rem; }
+  .card li { margin-bottom:0.375rem; }
+  .footer { text-align:center; margin-top:1.5rem; color:#475569; font-size:0.75rem; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-row">
+      <div class="pulse-dot"></div>
+      <h1>Claude Code — System Architecture</h1>
+    </div>
+    <p class="subtitle">Kris's Hermes agent stack — channels, delegation, MCP services &amp; the outbound confirmation gate</p>
+  </div>
+
+  <div class="diagram-container">
+    <svg viewBox="0 0 1680 1010" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+        </marker>
+        <marker id="arrowhead-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185" />
+        </marker>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+
+      <rect width="100%" height="100%" fill="url(#grid)" />
+
+      <!-- ================= ARROWS (drawn early, behind boxes) ================= -->
+
+      <!-- Kris -> Channels -->
+      <path d="M 200,745 Q 235,470 260,187" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 200,745 Q 230,500 260,262" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 200,745 Q 225,540 260,337" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 200,745 Q 220,600 260,417" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <text x="150" y="600" fill="#94a3b8" font-size="8">Telegram · CLI</text>
+      <text x="150" y="612" fill="#94a3b8" font-size="8">iMessage</text>
+
+      <!-- Channels -> Gateway -->
+      <path d="M 440,187 Q 480,230 520,300" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 440,262 Q 480,280 520,305" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 440,337 Q 480,330 520,320" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 440,417 Q 480,375 520,335" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+      <!-- Voice -> Claude Code -->
+      <path d="M 440,547 Q 610,470 780,425" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 440,622 Q 610,520 780,450" fill="none" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+      <!-- Gateway -> Claude Code -->
+      <path d="M 720,320 Q 750,370 780,415" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <text x="722" y="360" fill="#94a3b8" font-size="8">routes session</text>
+
+      <!-- Gateway -> Kanban -->
+      <path d="M 720,300 Q 950,330 1120,415" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <text x="880" y="335" fill="#94a3b8" font-size="8">dispatch (60s tick)</text>
+
+      <!-- Kanban -> koderek -> Netlify sites -->
+      <line x1="1230" y1="450" x2="1230" y2="468" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <line x1="1230" y1="560" x2="1230" y2="578" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <text x="1240" y="573" fill="#fbbf24" font-size="7">koderek-* naming · pre-approved, no gate</text>
+
+      <!-- Gateway -> scheduled jobs -->
+      <line x1="620" y1="370" x2="620" y2="428" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 715,355 Q 800,430 715,503" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 720,457 Q 750,440 778,428" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 720,532 Q 750,490 778,462" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+      <!-- Email pipeline -->
+      <line x1="620" y1="670" x2="620" y2="688" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 720,715 Q 755,600 780,470" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <text x="640" y="600" fill="#94a3b8" font-size="8">triage logic</text>
+      <path d="M 900,392 Q 1150,230 1400,262" fill="none" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#arrowhead)"/>
+      <text x="1000" y="245" fill="#94a3b8" font-size="7">email item</text>
+      <path d="M 800,392 Q 600,150 440,187" fill="none" stroke="#22d3ee" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#arrowhead)"/>
+      <text x="600" y="140" fill="#94a3b8" font-size="7">digest</text>
+
+      <!-- Claude Code -> Skills Library -->
+      <line x1="910" y1="380" x2="910" y2="332" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+      <!-- Claude Code -> Computer Control -->
+      <path d="M 1040,415 Q 1080,560 1120,707" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1040,440 Q 1090,600 1120,782" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1040,465 Q 1095,650 1120,857" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+      <!-- Claude Code -> MCP servers -->
+      <path d="M 1040,405 Q 1200,110 1400,187" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1040,415 Q 1220,150 1400,262" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1040,425 Q 1240,190 1400,337" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1040,435 Q 1260,230 1400,412" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1040,445 Q 1280,270 1400,487" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <text x="1180" y="100" fill="white" font-size="10" font-weight="600">MCP Servers</text>
+
+      <!-- brain-mcp -> Fly.io -> wikis -->
+      <line x1="1510" y1="515" x2="1510" y2="558" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1490,615 Q 1460,635 1434,653" fill="none" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <line x1="1510" y1="615" x2="1510" y2="653" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1530,615 Q 1560,635 1586,653" fill="none" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+      <!-- Claude Code -> Outbound Confirmation Gate -> External recipients (dashed rose) -->
+      <line x1="910" y1="520" x2="910" y2="578" stroke="#fb7185" stroke-width="1.5" marker-end="url(#arrowhead-rose)"/>
+      <text x="918" y="555" fill="#fb7185" font-size="8">confirmation required</text>
+      <line x1="910" y1="640" x2="910" y2="698" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="5,5" marker-end="url(#arrowhead-rose)"/>
+      <text x="918" y="675" fill="#fb7185" font-size="8">gated · dashed = 3rd-party send</text>
+
+      <!-- ================= COMPONENTS ================= -->
+
+      <!-- User -->
+      <rect x="40" y="700" width="160" height="90" rx="6" fill="#0f172a"/>
+      <rect x="40" y="700" width="160" height="90" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="120" y="730" fill="white" font-size="12" font-weight="600" text-anchor="middle">Kris (User)</text>
+      <text x="120" y="748" fill="#94a3b8" font-size="9" text-anchor="middle">Telegram · CLI</text>
+      <text x="120" y="762" fill="#94a3b8" font-size="9" text-anchor="middle">iMessage</text>
+
+      <!-- Section labels -->
+      <text x="260" y="148" fill="#22d3ee" font-size="10" font-weight="600">PLATFORMS / CHANNELS</text>
+      <text x="260" y="508" fill="#22d3ee" font-size="10" font-weight="600">VOICE</text>
+      <text x="520" y="418" fill="#fb923c" font-size="10" font-weight="600">SCHEDULED JOBS</text>
+      <text x="520" y="608" fill="#94a3b8" font-size="10" font-weight="600">EMAIL PIPELINE</text>
+      <text x="1120" y="368" fill="#34d399" font-size="10" font-weight="600">KODEREK — DEPLOY WORKER</text>
+      <text x="1120" y="668" fill="#34d399" font-size="10" font-weight="600">COMPUTER CONTROL</text>
+      <text x="1400" y="548" fill="#a78bfa" font-size="10" font-weight="600">BRAIN VAULT</text>
+
+      <!-- Channels -->
+      <rect x="260" y="160" width="180" height="55" rx="6" fill="#0f172a"/>
+      <rect x="260" y="160" width="180" height="55" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+      <text x="350" y="182" fill="white" font-size="11" font-weight="600" text-anchor="middle">Telegram</text>
+      <text x="350" y="198" fill="#94a3b8" font-size="8" text-anchor="middle">channel</text>
+
+      <rect x="260" y="235" width="180" height="55" rx="6" fill="#0f172a"/>
+      <rect x="260" y="235" width="180" height="55" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+      <text x="350" y="257" fill="white" font-size="11" font-weight="600" text-anchor="middle">Webhook</text>
+      <text x="350" y="273" fill="#94a3b8" font-size="8" text-anchor="middle">channel</text>
+
+      <rect x="260" y="310" width="180" height="55" rx="6" fill="#0f172a"/>
+      <rect x="260" y="310" width="180" height="55" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+      <text x="350" y="332" fill="white" font-size="11" font-weight="600" text-anchor="middle">API Server</text>
+      <text x="350" y="348" fill="#94a3b8" font-size="8" text-anchor="middle">channel</text>
+
+      <rect x="260" y="385" width="180" height="65" rx="6" fill="#0f172a"/>
+      <rect x="260" y="385" width="180" height="65" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+      <text x="350" y="407" fill="white" font-size="11" font-weight="600" text-anchor="middle">iMessage / SMS</text>
+      <text x="350" y="423" fill="#94a3b8" font-size="8" text-anchor="middle">via imsg CLI</text>
+      <text x="350" y="436" fill="#94a3b8" font-size="8" text-anchor="middle">Full Disk Access</text>
+
+      <!-- Voice -->
+      <rect x="260" y="520" width="180" height="55" rx="6" fill="#0f172a"/>
+      <rect x="260" y="520" width="180" height="55" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+      <text x="350" y="542" fill="white" font-size="11" font-weight="600" text-anchor="middle">STT</text>
+      <text x="350" y="558" fill="#94a3b8" font-size="8" text-anchor="middle">Parakeet-MLX, local</text>
+
+      <rect x="260" y="595" width="180" height="55" rx="6" fill="#0f172a"/>
+      <rect x="260" y="595" width="180" height="55" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+      <text x="350" y="617" fill="white" font-size="11" font-weight="600" text-anchor="middle">TTS</text>
+      <text x="350" y="633" fill="#94a3b8" font-size="8" text-anchor="middle">Supertonic, auto PL/EN</text>
+
+      <!-- Gateway -->
+      <rect x="520" y="260" width="200" height="110" rx="8" fill="#0f172a"/>
+      <rect x="520" y="260" width="200" height="110" rx="8" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+      <text x="620" y="288" fill="white" font-size="12" font-weight="600" text-anchor="middle">Hermes Gateway</text>
+      <text x="620" y="306" fill="#94a3b8" font-size="8" text-anchor="middle">background daemon</text>
+      <text x="620" y="320" fill="#94a3b8" font-size="8" text-anchor="middle">routes channels → sessions</text>
+      <text x="620" y="334" fill="#94a3b8" font-size="8" text-anchor="middle">embedded kanban dispatcher</text>
+      <text x="620" y="348" fill="#fb923c" font-size="8" text-anchor="middle">60s tick</text>
+
+      <!-- Scheduled jobs -->
+      <rect x="520" y="430" width="200" height="55" rx="6" fill="#0f172a"/>
+      <rect x="520" y="430" width="200" height="55" rx="6" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+      <text x="620" y="452" fill="white" font-size="11" font-weight="600" text-anchor="middle">Cron: Health-check</text>
+      <text x="620" y="468" fill="#94a3b8" font-size="8" text-anchor="middle">every 2h</text>
+
+      <rect x="520" y="505" width="200" height="55" rx="6" fill="#0f172a"/>
+      <rect x="520" y="505" width="200" height="55" rx="6" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+      <text x="620" y="527" fill="white" font-size="11" font-weight="600" text-anchor="middle">Cron: One-off reminders</text>
+      <text x="620" y="543" fill="#94a3b8" font-size="8" text-anchor="middle">ad-hoc schedule</text>
+
+      <!-- Email pipeline -->
+      <rect x="520" y="620" width="200" height="50" rx="6" fill="#0f172a"/>
+      <rect x="520" y="620" width="200" height="50" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="620" y="642" fill="white" font-size="11" font-weight="600" text-anchor="middle">Zoho Mail</text>
+      <text x="620" y="658" fill="#94a3b8" font-size="8" text-anchor="middle">inbound mailbox</text>
+
+      <rect x="520" y="690" width="200" height="50" rx="6" fill="#0f172a"/>
+      <rect x="520" y="690" width="200" height="50" rx="6" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+      <text x="620" y="712" fill="white" font-size="11" font-weight="600" text-anchor="middle">Cron: Zoho Triage</text>
+      <text x="620" y="728" fill="#94a3b8" font-size="8" text-anchor="middle">every 30 min</text>
+
+      <!-- Skills Library -->
+      <rect x="780" y="260" width="260" height="70" rx="6" fill="#0f172a"/>
+      <rect x="780" y="260" width="260" height="70" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="910" y="283" fill="white" font-size="11" font-weight="600" text-anchor="middle">Skills Library</text>
+      <text x="910" y="299" fill="#94a3b8" font-size="8" text-anchor="middle">94 skills · 14 categories</text>
+      <text x="910" y="312" fill="#94a3b8" font-size="7" text-anchor="middle">Creative · Productivity · DevOps · Email · Research</text>
+      <text x="910" y="323" fill="#94a3b8" font-size="7" text-anchor="middle">Apple · GitHub · Dev · Media/MLOps/Notes/Home/Social</text>
+
+      <!-- Claude Code core -->
+      <rect x="780" y="380" width="260" height="140" rx="10" fill="#0f172a"/>
+      <rect x="780" y="380" width="260" height="140" rx="10" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="2"/>
+      <text x="910" y="418" fill="white" font-size="14" font-weight="700" text-anchor="middle">Claude Code</text>
+      <text x="910" y="436" fill="#94a3b8" font-size="9" text-anchor="middle">default profile — core agent</text>
+      <text x="910" y="452" fill="#94a3b8" font-size="9" text-anchor="middle">claude-sonnet-5 via Anthropic</text>
+      <text x="910" y="470" fill="#34d399" font-size="8" text-anchor="middle">hub of the system</text>
+      <text x="910" y="486" fill="#94a3b8" font-size="8" text-anchor="middle">routes to voice, control,</text>
+      <text x="910" y="498" fill="#94a3b8" font-size="8" text-anchor="middle">MCP servers &amp; skills</text>
+
+      <!-- Outbound Confirmation Gate (security group boundary) -->
+      <rect x="770" y="560" width="280" height="100" rx="8" fill="transparent" stroke="#fb7185" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="780" y="574" fill="#fb7185" font-size="8">security boundary</text>
+      <rect x="790" y="580" width="240" height="60" rx="6" fill="#0f172a"/>
+      <rect x="790" y="580" width="240" height="60" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+      <text x="910" y="602" fill="white" font-size="11" font-weight="600" text-anchor="middle">Outbound Confirmation Gate</text>
+      <text x="910" y="617" fill="#94a3b8" font-size="8" text-anchor="middle">requires explicit Kris confirmation</text>
+      <text x="910" y="629" fill="#fbbf24" font-size="7" text-anchor="middle">exception: Netlify deploys (pre-approved)</text>
+
+      <!-- External recipients -->
+      <rect x="790" y="700" width="240" height="60" rx="6" fill="#0f172a"/>
+      <rect x="790" y="700" width="240" height="60" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="910" y="724" fill="white" font-size="11" font-weight="600" text-anchor="middle">Third-Party Recipients</text>
+      <text x="910" y="740" fill="#94a3b8" font-size="8" text-anchor="middle">iMessage/SMS · Email · Social</text>
+      <text x="910" y="752" fill="#94a3b8" font-size="7" text-anchor="middle">external.gated</text>
+
+      <!-- Kanban / koderek / Netlify sites -->
+      <rect x="1120" y="380" width="220" height="70" rx="6" fill="#0f172a"/>
+      <rect x="1120" y="380" width="220" height="70" rx="6" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+      <text x="1230" y="403" fill="white" font-size="11" font-weight="600" text-anchor="middle">Kanban Board</text>
+      <text x="1230" y="419" fill="#94a3b8" font-size="8" text-anchor="middle">SQLite task queue</text>
+      <text x="1230" y="432" fill="#94a3b8" font-size="8" text-anchor="middle">60s tick dispatch</text>
+
+      <rect x="1120" y="470" width="220" height="90" rx="6" fill="#0f172a"/>
+      <rect x="1120" y="470" width="220" height="90" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+      <text x="1230" y="495" fill="white" font-size="12" font-weight="600" text-anchor="middle">koderek</text>
+      <text x="1230" y="512" fill="#94a3b8" font-size="8" text-anchor="middle">cloned profile</text>
+      <text x="1230" y="526" fill="#94a3b8" font-size="8" text-anchor="middle">autonomous coding + deploy</text>
+      <text x="1230" y="540" fill="#94a3b8" font-size="8" text-anchor="middle">worker, dispatched via Kanban</text>
+      <text x="1230" y="552" fill="#94a3b8" font-size="7" text-anchor="middle">enforces koderek-* naming</text>
+
+      <rect x="1120" y="580" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1120" y="580" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="1230" y="602" fill="white" font-size="11" font-weight="600" text-anchor="middle">Netlify Sites</text>
+      <text x="1230" y="618" fill="#94a3b8" font-size="8" text-anchor="middle">koderek-* naming convention</text>
+
+      <!-- Computer control -->
+      <rect x="1120" y="680" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1120" y="680" width="220" height="55" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+      <text x="1230" y="702" fill="white" font-size="11" font-weight="600" text-anchor="middle">Computer Use</text>
+      <text x="1230" y="718" fill="#94a3b8" font-size="8" text-anchor="middle">cua-driver · background, no focus-steal</text>
+
+      <rect x="1120" y="755" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1120" y="755" width="220" height="55" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+      <text x="1230" y="777" fill="white" font-size="11" font-weight="600" text-anchor="middle">Browser Automation</text>
+      <text x="1230" y="793" fill="#94a3b8" font-size="8" text-anchor="middle">page control &amp; extraction</text>
+
+      <rect x="1120" y="830" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1120" y="830" width="220" height="55" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+      <text x="1230" y="852" fill="white" font-size="11" font-weight="600" text-anchor="middle">Terminal / Shell</text>
+      <text x="1230" y="868" fill="#94a3b8" font-size="8" text-anchor="middle">local process execution</text>
+
+      <!-- MCP servers -->
+      <rect x="1400" y="160" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1400" y="160" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="1510" y="182" fill="white" font-size="11" font-weight="600" text-anchor="middle">Higgsfield.ai</text>
+      <text x="1510" y="198" fill="#94a3b8" font-size="8" text-anchor="middle">nano_banana · gpt_image_2</text>
+
+      <rect x="1400" y="235" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1400" y="235" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="1510" y="257" fill="white" font-size="11" font-weight="600" text-anchor="middle">Monday.com</text>
+      <text x="1510" y="273" fill="#94a3b8" font-size="8" text-anchor="middle">MCP server</text>
+
+      <rect x="1400" y="310" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1400" y="310" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="1510" y="332" fill="white" font-size="11" font-weight="600" text-anchor="middle">Netlify</text>
+      <text x="1510" y="348" fill="#94a3b8" font-size="8" text-anchor="middle">MCP server</text>
+
+      <rect x="1400" y="385" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1400" y="385" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="1510" y="407" fill="white" font-size="11" font-weight="600" text-anchor="middle">Peekaboo</text>
+      <text x="1510" y="423" fill="#94a3b8" font-size="8" text-anchor="middle">MCP server</text>
+
+      <rect x="1400" y="460" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1400" y="460" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="1510" y="482" fill="white" font-size="11" font-weight="600" text-anchor="middle">brain-mcp</text>
+      <text x="1510" y="498" fill="#94a3b8" font-size="8" text-anchor="middle">MCP server</text>
+
+      <!-- Brain Vault -->
+      <rect x="1400" y="560" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1400" y="560" width="220" height="55" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="1510" y="582" fill="white" font-size="11" font-weight="600" text-anchor="middle">Fly.io Host</text>
+      <text x="1510" y="598" fill="#94a3b8" font-size="7" text-anchor="middle">kris-brain-mcp.fly.dev</text>
+
+      <rect x="1400" y="655" width="68" height="50" rx="5" fill="#0f172a"/>
+      <rect x="1400" y="655" width="68" height="50" rx="5" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="1434" y="676" fill="white" font-size="8" font-weight="600" text-anchor="middle">Wiki:</text>
+      <text x="1434" y="688" fill="#94a3b8" font-size="8" text-anchor="middle">Work</text>
+
+      <rect x="1476" y="655" width="68" height="50" rx="5" fill="#0f172a"/>
+      <rect x="1476" y="655" width="68" height="50" rx="5" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="1510" y="676" fill="white" font-size="8" font-weight="600" text-anchor="middle">Wiki:</text>
+      <text x="1510" y="688" fill="#94a3b8" font-size="8" text-anchor="middle">Spanish</text>
+
+      <rect x="1552" y="655" width="68" height="50" rx="5" fill="#0f172a"/>
+      <rect x="1552" y="655" width="68" height="50" rx="5" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="1586" y="676" fill="white" font-size="8" font-weight="600" text-anchor="middle">Wiki:</text>
+      <text x="1586" y="688" fill="#94a3b8" font-size="8" text-anchor="middle">Personal</text>
+
+      <!-- ================= LEGEND ================= -->
+      <text x="40" y="928" fill="white" font-size="11" font-weight="600">Legend</text>
+
+      <rect x="40" y="940" width="16" height="10" rx="2" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+      <text x="62" y="949" fill="#94a3b8" font-size="8">Frontend / Channels</text>
+
+      <rect x="220" y="940" width="16" height="10" rx="2" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+      <text x="242" y="949" fill="#94a3b8" font-size="8">Backend / Agent Core</text>
+
+      <rect x="420" y="940" width="16" height="10" rx="2" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1"/>
+      <text x="442" y="949" fill="#94a3b8" font-size="8">Database / Memory</text>
+
+      <rect x="620" y="940" width="16" height="10" rx="2" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+      <text x="642" y="949" fill="#94a3b8" font-size="8">Cloud / MCP Service</text>
+
+      <rect x="820" y="940" width="16" height="10" rx="2" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/>
+      <text x="842" y="949" fill="#94a3b8" font-size="8">Security</text>
+
+      <rect x="950" y="940" width="16" height="10" rx="2" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1"/>
+      <text x="972" y="949" fill="#94a3b8" font-size="8">Message Bus / Gateway</text>
+
+      <rect x="1150" y="940" width="16" height="10" rx="2" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1"/>
+      <text x="1172" y="949" fill="#94a3b8" font-size="8">External</text>
+
+      <line x1="1260" y1="945" x2="1280" y2="945" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4"/>
+      <text x="1286" y="949" fill="#94a3b8" font-size="8">Gated outbound (confirmation required)</text>
+
+      <line x1="40" y1="968" x2="60" y2="968" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="66" y="972" fill="#94a3b8" font-size="8">Standard data / control flow</text>
+    </svg>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-header"><div class="card-dot cyan"></div><h3>Channels &amp; Entry Points</h3></div>
+      <ul>
+        <li>• Telegram, Webhook, API Server channels</li>
+        <li>• iMessage/SMS via imsg CLI (Full Disk Access)</li>
+        <li>• Voice: STT (Parakeet-MLX, local), TTS (Supertonic, auto PL/EN)</li>
+        <li>• All routed through the Hermes Gateway daemon</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-dot emerald"></div><h3>Agent &amp; Delegation Layer</h3></div>
+      <ul>
+        <li>• Claude Code (default profile) — claude-sonnet-5 via Anthropic, system hub</li>
+        <li>• koderek (cloned profile) — autonomous coding + deploy worker</li>
+        <li>• Kanban Board (SQLite queue) dispatches koderek every 60s tick</li>
+        <li>• Computer Use, Browser Automation, Terminal/Shell for local control</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-dot rose"></div><h3>External Services &amp; Security</h3></div>
+      <ul>
+        <li>• MCP servers: Higgsfield.ai, Monday.com, Netlify, Peekaboo, brain-mcp</li>
+        <li>• Brain Vault on Fly.io — Work, Spanish, Personal wikis</li>
+        <li>• Outbound Confirmation Gate: hard-gates iMessage/email/social sends; Netlify deploys are pre-approved exception</li>
+        <li>• Skills Library: 94 skills across 14 categories</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="footer">Claude Code — System Architecture • generated with the architecture-diagram skill • dark/JetBrains Mono standard</p>
+</div>
+</body>
+</html>
