@@ -14,13 +14,14 @@
     padding: 2rem;
     color: white;
   }
-  .container { max-width: 1500px; margin: 0 auto; }
+  .container { max-width: 1600px; margin: 0 auto; }
   .header { margin-bottom: 2rem; }
   .header-row { display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem; }
   .pulse-dot { width:12px; height:12px; background:#34d399; border-radius:50%; animation:pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
   h1 { font-size:1.5rem; font-weight:700; letter-spacing:-0.025em; }
   .subtitle { color:#94a3b8; font-size:0.875rem; margin-left:1.75rem; }
+  .badge { display:inline-block; margin-left:0.75rem; font-size:0.65rem; color:#fbbf24; border:1px solid #78350f; background:rgba(120,53,15,0.25); padding:1px 8px; border-radius:999px; vertical-align:middle; }
   .diagram-container {
     background: rgba(15,23,42,0.5);
     border-radius: 1rem;
@@ -28,7 +29,7 @@
     padding: 1.5rem;
     overflow-x: auto;
   }
-  svg { width:100%; min-width:1400px; display:block; }
+  svg { width:100%; min-width:1500px; display:block; }
   .cards { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap:1rem; margin-top:2rem; }
   .card { background: rgba(15,23,42,0.5); border-radius:0.75rem; border:1px solid #1e293b; padding:1.25rem; }
   .card-header { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem; }
@@ -51,18 +52,22 @@
     <div class="header-row">
       <div class="pulse-dot"></div>
       <h1>Hermes Agent — System Architecture</h1>
+      <span class="badge">v2 — corrected structure</span>
     </div>
-    <p class="subtitle">Kris's Hermes agent stack — channels, delegation, MCP services &amp; the outbound confirmation gate</p>
+    <p class="subtitle">Kris's Hermes agent stack — channels, delegation, MCP service categories, deployment/storage &amp; the outbound confirmation gate</p>
   </div>
 
   <div class="diagram-container">
-    <svg viewBox="0 0 1680 1010" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 1740 1150" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
           <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
         </marker>
         <marker id="arrowhead-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
           <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185" />
+        </marker>
+        <marker id="arrowhead-slate" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" opacity="0.6"/>
         </marker>
         <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
           <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
@@ -99,10 +104,17 @@
       <path d="M 720,300 Q 950,330 1120,415" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead)"/>
       <text x="880" y="335" fill="#94a3b8" font-size="8">dispatch (60s tick)</text>
 
-      <!-- Kanban -> koderek -> Netlify sites -->
+      <!-- Kanban -> koderek -> Netlify Sites / GitHub -->
       <line x1="1230" y1="450" x2="1230" y2="468" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-      <line x1="1230" y1="560" x2="1230" y2="578" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-      <text x="1240" y="573" fill="#fbbf24" font-size="7">koderek-* naming · pre-approved, no gate</text>
+      <line x1="1210" y1="560" x2="1210" y2="598" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1250,560 Q 1290,610 1250,663" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <text x="1260" y="592" fill="#fbbf24" font-size="7">koderek-* naming</text>
+      <text x="1300" y="615" fill="#94a3b8" font-size="7">koderek deploys both</text>
+
+      <!-- Hermes Agent -> GitHub direct (gh CLI, pre-approved like Netlify) -->
+      <path d="M 1040,470 Q 1300,460 1350,690 Q 1355,700 1340,700" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <text x="1355" y="620" fill="#94a3b8" font-size="7">gh CLI (mekwins)</text>
+      <text x="1355" y="631" fill="#94a3b8" font-size="7">direct · pre-approved</text>
 
       <!-- Gateway -> scheduled jobs -->
       <line x1="620" y1="370" x2="620" y2="428" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead)"/>
@@ -114,32 +126,37 @@
       <line x1="620" y1="670" x2="620" y2="688" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
       <path d="M 720,715 Q 755,600 780,470" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead)"/>
       <text x="640" y="600" fill="#94a3b8" font-size="8">triage logic</text>
-      <path d="M 900,392 Q 1150,230 1400,262" fill="none" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#arrowhead)"/>
-      <text x="1000" y="245" fill="#94a3b8" font-size="7">email item</text>
+      <path d="M 900,392 Q 1150,260 1400,287" fill="none" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#arrowhead)"/>
+      <text x="1000" y="270" fill="#94a3b8" font-size="7">email item</text>
       <path d="M 800,392 Q 600,150 440,187" fill="none" stroke="#22d3ee" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#arrowhead)"/>
       <text x="600" y="140" fill="#94a3b8" font-size="7">digest</text>
 
-      <!-- Hermes Agent -> Skills Library -->
-      <line x1="910" y1="380" x2="910" y2="332" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <!-- Hermes Agent -> Skills Library (dashed = pulled on-demand, NOT a live wire) -->
+      <line x1="910" y1="380" x2="910" y2="332" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrowhead)"/>
+      <text x="918" y="352" fill="#94a3b8" font-size="7">pulled on-demand</text>
+
+      <!-- Hermes Agent -> Available Models (nexteer-gateway) — dashed, lighter, NOT default-routed -->
+      <path d="M 780,470 Q 660,650 620,798" fill="none" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="3,5" opacity="0.7" marker-end="url(#arrowhead-slate)"/>
+      <text x="640" y="770" fill="#94a3b8" font-size="7">available · NOT default-routed</text>
 
       <!-- Hermes Agent -> Computer Control -->
-      <path d="M 1040,415 Q 1080,560 1120,707" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-      <path d="M 1040,440 Q 1090,600 1120,782" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-      <path d="M 1040,465 Q 1095,650 1120,857" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1040,415 Q 1080,600 1120,792" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1040,440 Q 1090,650 1120,867" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1040,465 Q 1095,700 1120,942" fill="none" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowhead)"/>
 
-      <!-- Hermes Agent -> MCP servers -->
-      <path d="M 1040,405 Q 1200,110 1400,187" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-      <path d="M 1040,415 Q 1220,150 1400,262" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-      <path d="M 1040,425 Q 1240,190 1400,337" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-      <path d="M 1040,435 Q 1260,230 1400,412" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-      <path d="M 1040,445 Q 1280,270 1400,487" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-      <text x="1180" y="100" fill="white" font-size="10" font-weight="600">MCP Servers</text>
+      <!-- Hermes Agent -> MCP servers (5 enabled servers, by category) -->
+      <path d="M 1040,400 Q 1200,120 1400,197" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1040,410 Q 1220,160 1400,287" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1040,420 Q 1240,220 1400,377" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1040,430 Q 1260,280 1400,467" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1040,440 Q 1280,340 1400,570" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <text x="1180" y="100" fill="white" font-size="10" font-weight="600">MCP Servers (enabled: true)</text>
 
-      <!-- brain-mcp -> Fly.io -> wikis -->
-      <line x1="1510" y1="515" x2="1510" y2="558" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-      <path d="M 1490,615 Q 1460,635 1434,653" fill="none" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-      <line x1="1510" y1="615" x2="1510" y2="653" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
-      <path d="M 1530,615 Q 1560,635 1586,653" fill="none" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <!-- brain-mcp -> Fly.io -> 3 wikis -->
+      <line x1="1510" y1="595" x2="1510" y2="608" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1490,660 Q 1460,672 1434,678" fill="none" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <line x1="1510" y1="660" x2="1510" y2="678" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <path d="M 1530,660 Q 1560,672 1586,678" fill="none" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
 
       <!-- Hermes Agent -> Outbound Confirmation Gate -> External recipients (dashed rose) -->
       <line x1="910" y1="520" x2="910" y2="578" stroke="#fb7185" stroke-width="1.5" marker-end="url(#arrowhead-rose)"/>
@@ -158,12 +175,12 @@
 
       <!-- Section labels -->
       <text x="260" y="148" fill="#22d3ee" font-size="10" font-weight="600">PLATFORMS / CHANNELS</text>
-      <text x="260" y="508" fill="#22d3ee" font-size="10" font-weight="600">VOICE</text>
+      <text x="260" y="508" fill="#22d3ee" font-size="10" font-weight="600">VOICE — fully local</text>
       <text x="520" y="418" fill="#fb923c" font-size="10" font-weight="600">SCHEDULED JOBS</text>
       <text x="520" y="608" fill="#94a3b8" font-size="10" font-weight="600">EMAIL PIPELINE</text>
-      <text x="1120" y="368" fill="#34d399" font-size="10" font-weight="600">KODEREK — DEPLOY WORKER</text>
-      <text x="1120" y="668" fill="#34d399" font-size="10" font-weight="600">COMPUTER CONTROL</text>
-      <text x="1400" y="548" fill="#a78bfa" font-size="10" font-weight="600">BRAIN VAULT</text>
+      <text x="520" y="791" fill="#94a3b8" font-size="10" font-weight="600">CUSTOM PROVIDER (OPTIONAL)</text>
+      <text x="1120" y="368" fill="#34d399" font-size="10" font-weight="600">KODEREK — DEPLOY WORKER (always-on)</text>
+      <text x="1120" y="752" fill="#34d399" font-size="10" font-weight="600">COMPUTER CONTROL</text>
 
       <!-- Channels -->
       <rect x="260" y="160" width="180" height="55" rx="6" fill="#0f172a"/>
@@ -187,16 +204,17 @@
       <text x="350" y="423" fill="#94a3b8" font-size="8" text-anchor="middle">via imsg CLI</text>
       <text x="350" y="436" fill="#94a3b8" font-size="8" text-anchor="middle">Full Disk Access</text>
 
-      <!-- Voice -->
+      <!-- Voice (fully local) -->
       <rect x="260" y="520" width="180" height="55" rx="6" fill="#0f172a"/>
       <rect x="260" y="520" width="180" height="55" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
       <text x="350" y="542" fill="white" font-size="11" font-weight="600" text-anchor="middle">STT</text>
-      <text x="350" y="558" fill="#94a3b8" font-size="8" text-anchor="middle">Parakeet-MLX, local</text>
+      <text x="350" y="558" fill="#94a3b8" font-size="8" text-anchor="middle">Parakeet-MLX · local</text>
 
       <rect x="260" y="595" width="180" height="55" rx="6" fill="#0f172a"/>
       <rect x="260" y="595" width="180" height="55" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
       <text x="350" y="617" fill="white" font-size="11" font-weight="600" text-anchor="middle">TTS</text>
-      <text x="350" y="633" fill="#94a3b8" font-size="8" text-anchor="middle">Supertonic, auto PL/EN</text>
+      <text x="350" y="633" fill="#94a3b8" font-size="8" text-anchor="middle">Supertonic · auto PL/EN</text>
+      <text x="350" y="648" fill="#34d399" font-size="7" text-anchor="middle">no cloud API calls</text>
 
       <!-- Gateway -->
       <rect x="520" y="260" width="200" height="110" rx="8" fill="#0f172a"/>
@@ -229,13 +247,25 @@
       <text x="620" y="712" fill="white" font-size="11" font-weight="600" text-anchor="middle">Cron: Zoho Triage</text>
       <text x="620" y="728" fill="#94a3b8" font-size="8" text-anchor="middle">every 30 min</text>
 
-      <!-- Skills Library -->
+      <!-- Available Models — nexteer-gateway custom provider (dashed = optional, not default-routed) -->
+      <rect x="520" y="800" width="200" height="150" rx="8" fill="transparent" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="620" y="817" fill="white" font-size="10" font-weight="600" text-anchor="middle">nexteer-gateway</text>
+      <text x="620" y="830" fill="#94a3b8" font-size="7" text-anchor="middle">custom_providers · ai-gateway.nexteer.app</text>
+      <text x="620" y="845" fill="#fbbf24" font-size="7" text-anchor="middle">available, NOT default-routed</text>
+      <text x="620" y="862" fill="#94a3b8" font-size="8" text-anchor="middle">· gpt-5.3-codex</text>
+      <text x="620" y="876" fill="#94a3b8" font-size="8" text-anchor="middle">· Kimi-K2.6 ("Chiniol")</text>
+      <text x="620" y="890" fill="#94a3b8" font-size="8" text-anchor="middle">· deepseek-v4-flash ("Tani Chiniol")</text>
+      <text x="620" y="904" fill="#94a3b8" font-size="8" text-anchor="middle">· claude-sonnet-5</text>
+      <text x="620" y="918" fill="#94a3b8" font-size="8" text-anchor="middle">· gpt-5.6-luna</text>
+      <text x="620" y="936" fill="#94a3b8" font-size="7" text-anchor="middle">subagents inherit parent model by default</text>
+
+      <!-- Skills Library (pulled on-demand — not wired to MCP/Netlify) -->
       <rect x="780" y="260" width="260" height="70" rx="6" fill="#0f172a"/>
-      <rect x="780" y="260" width="260" height="70" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect x="780" y="260" width="260" height="70" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2,2"/>
       <text x="910" y="283" fill="white" font-size="11" font-weight="600" text-anchor="middle">Skills Library</text>
-      <text x="910" y="299" fill="#94a3b8" font-size="8" text-anchor="middle">94 skills · 14 categories</text>
-      <text x="910" y="312" fill="#94a3b8" font-size="7" text-anchor="middle">Creative · Productivity · DevOps · Email · Research</text>
-      <text x="910" y="323" fill="#94a3b8" font-size="7" text-anchor="middle">Apple · GitHub · Dev · Media/MLOps/Notes/Home/Social</text>
+      <text x="910" y="299" fill="#94a3b8" font-size="8" text-anchor="middle">94 skills · 14 categories · loaded on-demand</text>
+      <text x="910" y="312" fill="#94a3b8" font-size="7" text-anchor="middle">Creative(19) · Productivity(18) · DevOps(6) · Notes(2)</text>
+      <text x="910" y="323" fill="#94a3b8" font-size="7" text-anchor="middle">Apple · GitHub · Research · Email · Media/MLOps/Home/Social</text>
 
       <!-- Hermes Agent core -->
       <rect x="780" y="380" width="260" height="140" rx="10" fill="#0f172a"/>
@@ -254,7 +284,7 @@
       <rect x="790" y="580" width="240" height="60" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
       <text x="910" y="602" fill="white" font-size="11" font-weight="600" text-anchor="middle">Outbound Confirmation Gate</text>
       <text x="910" y="617" fill="#94a3b8" font-size="8" text-anchor="middle">requires explicit Kris confirmation</text>
-      <text x="910" y="629" fill="#fbbf24" font-size="7" text-anchor="middle">exception: Netlify deploys (pre-approved)</text>
+      <text x="910" y="629" fill="#fbbf24" font-size="7" text-anchor="middle">exception: Netlify/GitHub deploys (pre-approved)</text>
 
       <!-- External recipients -->
       <rect x="790" y="700" width="240" height="60" rx="6" fill="#0f172a"/>
@@ -263,7 +293,7 @@
       <text x="910" y="740" fill="#94a3b8" font-size="8" text-anchor="middle">iMessage/SMS · Email · Social</text>
       <text x="910" y="752" fill="#94a3b8" font-size="7" text-anchor="middle">external.gated</text>
 
-      <!-- Kanban / koderek / Netlify sites -->
+      <!-- Kanban / koderek -->
       <rect x="1120" y="380" width="220" height="70" rx="6" fill="#0f172a"/>
       <rect x="1120" y="380" width="220" height="70" rx="6" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
       <text x="1230" y="403" fill="white" font-size="11" font-weight="600" text-anchor="middle">Kanban Board</text>
@@ -273,108 +303,132 @@
       <rect x="1120" y="470" width="220" height="90" rx="6" fill="#0f172a"/>
       <rect x="1120" y="470" width="220" height="90" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
       <text x="1230" y="495" fill="white" font-size="12" font-weight="600" text-anchor="middle">koderek</text>
-      <text x="1230" y="512" fill="#94a3b8" font-size="8" text-anchor="middle">cloned profile</text>
+      <text x="1230" y="512" fill="#94a3b8" font-size="8" text-anchor="middle">cloned Hermes profile · always-active</text>
       <text x="1230" y="526" fill="#94a3b8" font-size="8" text-anchor="middle">autonomous coding + deploy</text>
       <text x="1230" y="540" fill="#94a3b8" font-size="8" text-anchor="middle">worker, dispatched via Kanban</text>
-      <text x="1230" y="552" fill="#94a3b8" font-size="7" text-anchor="middle">enforces koderek-* naming</text>
+      <text x="1230" y="552" fill="#94a3b8" font-size="7" text-anchor="middle">enforces koderek-* naming (Netlify)</text>
 
-      <rect x="1120" y="580" width="220" height="55" rx="6" fill="#0f172a"/>
-      <rect x="1120" y="580" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
-      <text x="1230" y="602" fill="white" font-size="11" font-weight="600" text-anchor="middle">Netlify Sites</text>
-      <text x="1230" y="618" fill="#94a3b8" font-size="8" text-anchor="middle">koderek-* naming convention</text>
+      <!-- Deployment / Storage group boundary (Netlify + GitHub) -->
+      <rect x="1110" y="575" width="240" height="150" rx="8" fill="transparent" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="1120" y="590" fill="#fbbf24" font-size="9" font-weight="600">DEPLOYMENT / STORAGE</text>
+
+      <rect x="1120" y="598" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1120" y="598" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="1230" y="618" fill="white" font-size="11" font-weight="600" text-anchor="middle">Netlify Sites</text>
+      <text x="1230" y="632" fill="#94a3b8" font-size="7" text-anchor="middle">koderek-* naming · MCP-driven</text>
+      <text x="1230" y="644" fill="#fb7185" font-size="7" text-anchor="middle">⚠ blocked: free-tier credit (300/mo) exhausted</text>
+
+      <rect x="1120" y="663" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1120" y="663" width="220" height="55" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="1230" y="683" fill="white" font-size="11" font-weight="600" text-anchor="middle">GitHub (repos + Pages)</text>
+      <text x="1230" y="697" fill="#94a3b8" font-size="7" text-anchor="middle">"storage" · via gh CLI, NOT an MCP server</text>
+      <text x="1230" y="709" fill="#34d399" font-size="7" text-anchor="middle">OAuth as mekwins · LIVE deploy target</text>
 
       <!-- Computer control -->
-      <rect x="1120" y="680" width="220" height="55" rx="6" fill="#0f172a"/>
-      <rect x="1120" y="680" width="220" height="55" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
-      <text x="1230" y="702" fill="white" font-size="11" font-weight="600" text-anchor="middle">Computer Use</text>
-      <text x="1230" y="718" fill="#94a3b8" font-size="8" text-anchor="middle">cua-driver · background, no focus-steal</text>
+      <rect x="1120" y="765" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1120" y="765" width="220" height="55" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+      <text x="1230" y="787" fill="white" font-size="11" font-weight="600" text-anchor="middle">Computer Use</text>
+      <text x="1230" y="803" fill="#94a3b8" font-size="8" text-anchor="middle">cua-driver · background, no focus-steal</text>
 
-      <rect x="1120" y="755" width="220" height="55" rx="6" fill="#0f172a"/>
-      <rect x="1120" y="755" width="220" height="55" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
-      <text x="1230" y="777" fill="white" font-size="11" font-weight="600" text-anchor="middle">Browser Automation</text>
-      <text x="1230" y="793" fill="#94a3b8" font-size="8" text-anchor="middle">page control &amp; extraction</text>
+      <rect x="1120" y="840" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1120" y="840" width="220" height="55" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+      <text x="1230" y="862" fill="white" font-size="11" font-weight="600" text-anchor="middle">Browser Automation</text>
+      <text x="1230" y="878" fill="#94a3b8" font-size="8" text-anchor="middle">page control &amp; extraction</text>
 
-      <rect x="1120" y="830" width="220" height="55" rx="6" fill="#0f172a"/>
-      <rect x="1120" y="830" width="220" height="55" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
-      <text x="1230" y="852" fill="white" font-size="11" font-weight="600" text-anchor="middle">Terminal / Shell</text>
-      <text x="1230" y="868" fill="#94a3b8" font-size="8" text-anchor="middle">local process execution</text>
+      <rect x="1120" y="915" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1120" y="915" width="220" height="55" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+      <text x="1230" y="937" fill="white" font-size="11" font-weight="600" text-anchor="middle">Terminal / Shell</text>
+      <text x="1230" y="953" fill="#94a3b8" font-size="8" text-anchor="middle">local process execution</text>
 
-      <!-- MCP servers -->
-      <rect x="1400" y="160" width="220" height="55" rx="6" fill="#0f172a"/>
-      <rect x="1400" y="160" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
-      <text x="1510" y="182" fill="white" font-size="11" font-weight="600" text-anchor="middle">Higgsfield.ai</text>
-      <text x="1510" y="198" fill="#94a3b8" font-size="8" text-anchor="middle">nano_banana · gpt_image_2</text>
+      <!-- MCP servers, grouped by category -->
+      <text x="1400" y="163" fill="#a78bfa" font-size="8" font-weight="600">CREATIVE</text>
+      <rect x="1400" y="170" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1400" y="170" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="1510" y="192" fill="white" font-size="11" font-weight="600" text-anchor="middle">Higgsfield.ai</text>
+      <text x="1510" y="208" fill="#94a3b8" font-size="8" text-anchor="middle">nano_banana · gpt_image_2</text>
 
-      <rect x="1400" y="235" width="220" height="55" rx="6" fill="#0f172a"/>
-      <rect x="1400" y="235" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
-      <text x="1510" y="257" fill="white" font-size="11" font-weight="600" text-anchor="middle">Monday.com</text>
-      <text x="1510" y="273" fill="#94a3b8" font-size="8" text-anchor="middle">MCP server</text>
+      <text x="1400" y="253" fill="#a78bfa" font-size="8" font-weight="600">PROJECT MANAGEMENT</text>
+      <rect x="1400" y="260" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1400" y="260" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="1510" y="282" fill="white" font-size="11" font-weight="600" text-anchor="middle">Monday.com</text>
+      <text x="1510" y="298" fill="#94a3b8" font-size="8" text-anchor="middle">mcp.monday.com</text>
 
-      <rect x="1400" y="310" width="220" height="55" rx="6" fill="#0f172a"/>
-      <rect x="1400" y="310" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
-      <text x="1510" y="332" fill="white" font-size="11" font-weight="600" text-anchor="middle">Netlify</text>
-      <text x="1510" y="348" fill="#94a3b8" font-size="8" text-anchor="middle">MCP server</text>
+      <text x="1400" y="343" fill="#a78bfa" font-size="8" font-weight="600">DEPLOYMENT (MCP)</text>
+      <rect x="1400" y="350" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1400" y="350" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="1510" y="372" fill="white" font-size="11" font-weight="600" text-anchor="middle">Netlify</text>
+      <text x="1510" y="388" fill="#fb7185" font-size="7" text-anchor="middle">⚠ credit-blocked this cycle</text>
 
-      <rect x="1400" y="385" width="220" height="55" rx="6" fill="#0f172a"/>
-      <rect x="1400" y="385" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
-      <text x="1510" y="407" fill="white" font-size="11" font-weight="600" text-anchor="middle">Peekaboo</text>
-      <text x="1510" y="423" fill="#94a3b8" font-size="8" text-anchor="middle">MCP server</text>
+      <text x="1400" y="433" fill="#a78bfa" font-size="8" font-weight="600">DESKTOP AUTOMATION</text>
+      <rect x="1400" y="440" width="220" height="55" rx="6" fill="#0f172a"/>
+      <rect x="1400" y="440" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="1510" y="462" fill="white" font-size="11" font-weight="600" text-anchor="middle">Peekaboo</text>
+      <text x="1510" y="478" fill="#94a3b8" font-size="8" text-anchor="middle">MCP server</text>
 
-      <rect x="1400" y="460" width="220" height="55" rx="6" fill="#0f172a"/>
-      <rect x="1400" y="460" width="220" height="55" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
-      <text x="1510" y="482" fill="white" font-size="11" font-weight="600" text-anchor="middle">brain-mcp</text>
-      <text x="1510" y="498" fill="#94a3b8" font-size="8" text-anchor="middle">MCP server</text>
+      <!-- Brain group boundary (brain-mcp -> Fly.io -> 3 wikis) -->
+      <rect x="1385" y="515" width="250" height="250" rx="8" fill="transparent" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="1400" y="530" fill="#a78bfa" font-size="8" font-weight="600">BRAIN — brain-mcp → Fly.io → 3 wikis</text>
 
-      <!-- Brain Vault -->
-      <rect x="1400" y="560" width="220" height="55" rx="6" fill="#0f172a"/>
-      <rect x="1400" y="560" width="220" height="55" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
-      <text x="1510" y="582" fill="white" font-size="11" font-weight="600" text-anchor="middle">Fly.io Host</text>
-      <text x="1510" y="598" fill="#94a3b8" font-size="7" text-anchor="middle">kris-brain-mcp.fly.dev</text>
+      <rect x="1400" y="540" width="220" height="50" rx="6" fill="#0f172a"/>
+      <rect x="1400" y="540" width="220" height="50" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="1510" y="560" fill="white" font-size="11" font-weight="600" text-anchor="middle">brain-mcp</text>
+      <text x="1510" y="576" fill="#94a3b8" font-size="8" text-anchor="middle">MCP server</text>
 
-      <rect x="1400" y="655" width="68" height="50" rx="5" fill="#0f172a"/>
-      <rect x="1400" y="655" width="68" height="50" rx="5" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
-      <text x="1434" y="676" fill="white" font-size="8" font-weight="600" text-anchor="middle">Wiki:</text>
-      <text x="1434" y="688" fill="#94a3b8" font-size="8" text-anchor="middle">Work</text>
+      <rect x="1400" y="608" width="220" height="50" rx="6" fill="#0f172a"/>
+      <rect x="1400" y="608" width="220" height="50" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="1510" y="628" fill="white" font-size="10" font-weight="600" text-anchor="middle">Fly.io Host</text>
+      <text x="1510" y="643" fill="#94a3b8" font-size="7" text-anchor="middle">kris-brain-mcp.fly.dev</text>
 
-      <rect x="1476" y="655" width="68" height="50" rx="5" fill="#0f172a"/>
-      <rect x="1476" y="655" width="68" height="50" rx="5" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
-      <text x="1510" y="676" fill="white" font-size="8" font-weight="600" text-anchor="middle">Wiki:</text>
-      <text x="1510" y="688" fill="#94a3b8" font-size="8" text-anchor="middle">Spanish</text>
+      <rect x="1400" y="678" width="68" height="50" rx="5" fill="#0f172a"/>
+      <rect x="1400" y="678" width="68" height="50" rx="5" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="1434" y="699" fill="white" font-size="8" font-weight="600" text-anchor="middle">Wiki:</text>
+      <text x="1434" y="711" fill="#94a3b8" font-size="8" text-anchor="middle">Work</text>
 
-      <rect x="1552" y="655" width="68" height="50" rx="5" fill="#0f172a"/>
-      <rect x="1552" y="655" width="68" height="50" rx="5" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
-      <text x="1586" y="676" fill="white" font-size="8" font-weight="600" text-anchor="middle">Wiki:</text>
-      <text x="1586" y="688" fill="#94a3b8" font-size="8" text-anchor="middle">Personal</text>
+      <rect x="1476" y="678" width="68" height="50" rx="5" fill="#0f172a"/>
+      <rect x="1476" y="678" width="68" height="50" rx="5" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="1510" y="699" fill="white" font-size="8" font-weight="600" text-anchor="middle">Wiki:</text>
+      <text x="1510" y="711" fill="#94a3b8" font-size="8" text-anchor="middle">Spanish</text>
+
+      <rect x="1552" y="678" width="68" height="50" rx="5" fill="#0f172a"/>
+      <rect x="1552" y="678" width="68" height="50" rx="5" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="1586" y="699" fill="white" font-size="8" font-weight="600" text-anchor="middle">Wiki:</text>
+      <text x="1586" y="711" fill="#94a3b8" font-size="8" text-anchor="middle">Personal</text>
 
       <!-- ================= LEGEND ================= -->
-      <text x="40" y="928" fill="white" font-size="11" font-weight="600">Legend</text>
+      <text x="40" y="1010" fill="white" font-size="11" font-weight="600">Legend</text>
 
-      <rect x="40" y="940" width="16" height="10" rx="2" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
-      <text x="62" y="949" fill="#94a3b8" font-size="8">Frontend / Channels</text>
+      <rect x="40" y="1022" width="16" height="10" rx="2" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+      <text x="62" y="1031" fill="#94a3b8" font-size="8">Frontend / Channels / Voice</text>
 
-      <rect x="220" y="940" width="16" height="10" rx="2" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
-      <text x="242" y="949" fill="#94a3b8" font-size="8">Backend / Agent Core</text>
+      <rect x="250" y="1022" width="16" height="10" rx="2" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+      <text x="272" y="1031" fill="#94a3b8" font-size="8">Backend / Agent Core / Control</text>
 
-      <rect x="420" y="940" width="16" height="10" rx="2" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1"/>
-      <text x="442" y="949" fill="#94a3b8" font-size="8">Database / Memory</text>
+      <rect x="490" y="1022" width="16" height="10" rx="2" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1"/>
+      <text x="512" y="1031" fill="#94a3b8" font-size="8">Database / Memory</text>
 
-      <rect x="620" y="940" width="16" height="10" rx="2" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
-      <text x="642" y="949" fill="#94a3b8" font-size="8">Cloud / MCP Service</text>
+      <rect x="690" y="1022" width="16" height="10" rx="2" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+      <text x="712" y="1031" fill="#94a3b8" font-size="8">Cloud / MCP Service</text>
 
-      <rect x="820" y="940" width="16" height="10" rx="2" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/>
-      <text x="842" y="949" fill="#94a3b8" font-size="8">Security</text>
+      <rect x="890" y="1022" width="16" height="10" rx="2" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/>
+      <text x="912" y="1031" fill="#94a3b8" font-size="8">Security</text>
 
-      <rect x="950" y="940" width="16" height="10" rx="2" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1"/>
-      <text x="972" y="949" fill="#94a3b8" font-size="8">Message Bus / Gateway</text>
+      <rect x="1020" y="1022" width="16" height="10" rx="2" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1"/>
+      <text x="1042" y="1031" fill="#94a3b8" font-size="8">Message Bus / Gateway</text>
 
-      <rect x="1150" y="940" width="16" height="10" rx="2" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1"/>
-      <text x="1172" y="949" fill="#94a3b8" font-size="8">External</text>
+      <rect x="1220" y="1022" width="16" height="10" rx="2" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1"/>
+      <text x="1242" y="1031" fill="#94a3b8" font-size="8">External / Storage</text>
 
-      <line x1="1260" y1="945" x2="1280" y2="945" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4"/>
-      <text x="1286" y="949" fill="#94a3b8" font-size="8">Gated outbound (confirmation required)</text>
+      <rect x="1400" y="1022" width="16" height="10" rx="2" fill="transparent" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3,3"/>
+      <text x="1422" y="1031" fill="#94a3b8" font-size="8">Optional / on-demand / not default-routed</text>
 
-      <line x1="40" y1="968" x2="60" y2="968" stroke="#94a3b8" stroke-width="1.5"/>
-      <text x="66" y="972" fill="#94a3b8" font-size="8">Standard data / control flow</text>
+      <line x1="40" y1="1050" x2="60" y2="1050" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="66" y="1054" fill="#94a3b8" font-size="8">Standard data / control flow</text>
+
+      <line x1="280" y1="1050" x2="300" y2="1050" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4"/>
+      <text x="306" y="1054" fill="#94a3b8" font-size="8">Gated outbound (confirmation required)</text>
+
+      <line x1="620" y1="1050" x2="640" y2="1050" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,5" opacity="0.7"/>
+      <text x="646" y="1054" fill="#94a3b8" font-size="8">Available but not wired/default-routed</text>
     </svg>
   </div>
 
@@ -384,31 +438,30 @@
       <ul>
         <li>• Telegram, Webhook, API Server channels</li>
         <li>• iMessage/SMS via imsg CLI (Full Disk Access)</li>
-        <li>• Voice: STT (Parakeet-MLX, local), TTS (Supertonic, auto PL/EN)</li>
+        <li>• Voice: STT (Parakeet-MLX) + TTS (Supertonic, auto PL/EN) — fully local, no cloud calls</li>
         <li>• All routed through the Hermes Gateway daemon</li>
       </ul>
     </div>
     <div class="card">
-      <div class="card-header"><div class="card-dot emerald"></div><h3>Agent &amp; Delegation Layer</h3></div>
+      <div class="card-header"><div class="card-dot emerald"></div><h3>Agent, Delegation &amp; Deployment</h3></div>
       <ul>
         <li>• Hermes Agent (default profile) — claude-sonnet-5 via Anthropic, system hub</li>
-        <li>• koderek (cloned profile) — autonomous coding + deploy worker</li>
-        <li>• Kanban Board (SQLite queue) dispatches koderek every 60s tick</li>
-        <li>• Computer Use, Browser Automation, Terminal/Shell for local control</li>
+        <li>• koderek (cloned profile) — always-active deploy worker, dispatched via Kanban (SQLite, 60s tick)</li>
+        <li>• nexteer-gateway custom provider exposes 5 models (incl. Kimi-K2.6, deepseek-v4-flash) — available, NOT auto-routed to subagents today</li>
+        <li>• Deployment/Storage: Netlify (⚠ blocked — free-tier credit exhausted) + GitHub (gh CLI, "storage", not an MCP server) — fed by koderek and directly by the agent</li>
       </ul>
     </div>
     <div class="card">
-      <div class="card-header"><div class="card-dot rose"></div><h3>External Services &amp; Security</h3></div>
+      <div class="card-header"><div class="card-dot rose"></div><h3>MCP Servers &amp; Security</h3></div>
       <ul>
-        <li>• MCP servers: Higgsfield.ai, Monday.com, Netlify, Peekaboo, brain-mcp</li>
-        <li>• Brain Vault on Fly.io — Work, Spanish, Personal wikis</li>
-        <li>• Outbound Confirmation Gate: hard-gates iMessage/email/social sends; Netlify deploys are pre-approved exception</li>
-        <li>• Skills Library: 94 skills across 14 categories</li>
+        <li>• Creative: Higgsfield.ai · Project Management: Monday.com · Deployment: Netlify · Desktop Automation: Peekaboo · Brain: brain-mcp → Fly.io → Work/Spanish/Personal wikis</li>
+        <li>• Outbound Confirmation Gate hard-gates iMessage/email/social sends; Netlify/GitHub deploys are the pre-approved exception</li>
+        <li>• Skills Library: 94 skills / 14 categories, loaded on-demand — not wired to MCP or Netlify</li>
       </ul>
     </div>
   </div>
 
-  <p class="footer">Hermes Agent — System Architecture • generated with the architecture-diagram skill • dark/JetBrains Mono standard</p>
+  <p class="footer">Hermes Agent — System Architecture • v2, corrected structure • generated with the architecture-diagram skill • dark/JetBrains Mono standard</p>
 </div>
 </body>
 </html>
